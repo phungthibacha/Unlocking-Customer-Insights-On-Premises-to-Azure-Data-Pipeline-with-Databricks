@@ -11,6 +11,24 @@ This project implements a robust data pipeline on Azure to address this need. Th
 
 This project builds an end-to-end data pipeline on Azure to extract, transform, and load (ETL) customer, product, market, and sales data from an on-premises MySQL database, ultimately generating actionable insights.
 
+![Alt text](images/1.onpremMySQLdb_customer.png)
+![Alt text](images/1.onpremMySQLdb_facttransaction.png)
+![Alt text](images/2.ADFpipeline_copy_tables_from_MySQL_to_ADLSgen2.png)
+![Alt text](images/3.Lookupactivity_TableNames.png)
+![Alt text](images/4.ForEachactivity_EachTableinMySQLdb.png)
+![Alt text](images/5.Copyactivity_Source_MySQLdb.png)
+![Alt text](images/6.Copyactivity_Sink_ADLSGen2_parquetformat.png)
+![Alt text](images/7.dataset_onprem.png)
+![Alt text](images/8.dataset_adlsgen2_parquet.png)
+![Alt text](images/9.Linkedservicesetup.png)
+![Alt text](images/10.IntegratedRuntimesetup.png)
+![Alt text](images/11.bronzecontainer.png)
+![Alt text](images/12.1.compressedfile_parquet.png)
+![Alt text](images/12.compressedfile_parquet.png)
+![Alt text](images/13. Unity catalog tables.png)
+![Alt text](images/14. Data Lineage for Atliq project.png)
+![Ale text](images/15. Fact table is partitioned by date.png)
+
 ## Solution Architecture
 
 The solution comprises the following components:
