@@ -11,24 +11,6 @@ This project implements a robust data pipeline on Azure to address this need. Th
 
 This project builds an end-to-end data pipeline on Azure to extract, transform, and load (ETL) customer, product, market, and sales data from an on-premises MySQL database, ultimately generating actionable insights.
 
-![Alt text](images/1.onpremMySQLdb_customer.png)
-![Alt text](images/1.onpremMySQLdb_facttransaction.png)
-![Alt text](images/2.ADFpipeline_copy_tables_from_MySQL_to_ADLSgen2.png)
-![Alt text](images/3.Lookupactivity_TableNames.png)
-![Alt text](images/4.ForEachactivity_EachTableinMySQLdb.png)
-![Alt text](images/5.Copyactivity_Source_MySQLdb.png)
-![Alt text](images/6.Copyactivity_Sink_ADLSGen2_parquetformat.png)
-![Alt text](images/7.dataset_onprem.png)
-![Alt text](images/8.dataset_adlsgen2_parquet.png)
-![Alt text](images/9.Linkedservicesetup.png)
-![Alt text](images/10.IntegratedRuntimesetup.png)
-![Alt text](images/11.bronzecontainer.png)
-![Alt text](images/12.1.compressedfile_parquet.png)
-![Alt text](images/12.compressedfile_parquet.png)
-![Alt text](images/13. Unity catalog tables.png)
-![Alt text](images/14. Data Lineage for Atliq project.png)
-![Ale text](images/15. Fact table is partitioned by date.png)
-
 ## Solution Architecture
 
 The solution comprises the following components:
@@ -36,12 +18,14 @@ The solution comprises the following components:
 1.  **Data Ingestion:**
     *   Extract data from the on-premises MySQL database.
     *   Load the extracted data into the Bronze layer of Azure Data Lake Storage (ADLS) Gen2 using Azure Data Factory (ADF).
+![Alt text](images/2.ADFpipeline_copy_tables_from_MySQL_to_ADLSgen2.png)
 
 2.  **Data Transformation:**
     *   Utilize Azure Databricks for data cleaning, transformation, and aggregation.
     *   Implement a Bronze, Silver, and Gold data lakehouse architecture.
         *   **Bronze to Silver:** Clean and validate data, perform data quality checks. Data violating quality rules is moved to a quarantine table. Implement Slowly Changing Dimension (SCD) Type 2 for dimension tables.
         *   **Silver to Gold:** Create a "One Big Table" by joining dimension and fact tables using the latest values from the Silver layer, partitioned by date.
+![Alt text](images/14.Data_Lineage_Atliq_project.png)
 
 3.  **Automation:**
     *   Schedule the entire pipeline for daily execution using ADF.
@@ -68,22 +52,42 @@ The solution comprises the following components:
 ### Step 2: Data Ingestion
 
 1.  **On-Premises MySQL Setup:** Ensure the on-premises MySQL database containing AtliQ sales data is accessible.
+![Alt text](images/1.onpremMySQLdb_customer.png)
+![Alt text](images/1.onpremMySQLdb_facttransaction.png)
 2.  **Azure Data Factory Setup:**
     *   **Create Self-Hosted Integration Runtime:** This integration runtime will facilitate data transfer between on-premises MySQL and Azure.
+![Alt text](images/10.IntegratedRuntimesetup.png)
+
     *   **Create Linked Services:**
         *   `ls-mysql-onprem`: Connects to the on-premises MySQL database using the self-hosted integration runtime.
         *   `ls-adlsgen2`: Connects to Azure Data Lake Storage Gen2 using the auto-resolved integration runtime.
+![Alt text](images/9.Linkedservicesetup.png)
+
     *   **Create Datasets:**
         *   `ds-mysql`: Represents the data in the MySQL database.
         *   `ds-adlsgen2-csv`: Represents the target location in ADLS Gen2 for initial data landing (Parquet format).
+![Alt text](images/7.dataset_onprem.png)
+![Alt text](images/8.dataset_adlsgen2_parquet.png)
+
     *   **Ingest Data with ADF (Pipeline: `pipe-copy-mysql-tables-to-adlsgen2`):**
         *   **Lookup Activity:** Retrieves a list of all tables within the `Atliqsale` schema in the MySQL database.
         *   **ForEach Activity:** Iterates through each table retrieved by the Lookup activity.
         *   **Copy Activity (within ForEach):** Copies data from the current MySQL table to the Bronze layer in ADLS Gen2 in Parquet format for efficient storage and querying. Dynamic content is used to handle different table names.
+![Alt text](images/3.Lookupactivity_TableNames.png)
+![Alt text](images/4.ForEachactivity_EachTableinMySQLdb.png)
+![Alt text](images/5.Copyactivity_Source_MySQLdb.png)
+![Alt text](images/6.Copyactivity_Sink_ADLSGen2_parquetformat.png)
 
+    **Parquet Compression:** The Copy activity leverages the Parquet format, which inherently provides significant data compression. Parquet uses columnar storage and efficient encoding techniques, resulting in smaller file sizes compared to row-based formats like CSV. This compression reduces storage costs in ADLS Gen2 and improves query performance by minimizing the amount of data that needs to be read from storage.
+![Alt text](images/11.bronzecontainer.png)
+![Alt text](images/12.1.compressedfile_parquet.png)
+![Alt text](images/12.compressedfile_parquet.png)
+    
 ### Step 3: Data Transformation (Databricks)
 
 1.  **Metastore and Catalog Setup:** Configure a metastore and Unity Catalog within Databricks to manage table schemas and metadata. Configure fine-grained access control to data assets.
+![Alt text](images/13.Unity_catalog_tables.png)
+
 2.  **External Location Setup:** Configure Databricks to access the `bronze`, `silver`, and `gold` containers in ADLS Gen2.
 3.  **Data Transformation Notebooks:** Implement Databricks notebooks to perform the following transformations:
     *   **Bronze to Silver:**
@@ -94,6 +98,7 @@ The solution comprises the following components:
     *   **Silver to Gold:**
         *   Creation of the "One Big Table" by joining dimension and fact tables using the latest values from the Silver layer.
         *   Partitioning the "One Big Table" by date.
+![Ale text](images/15.Fact_table_is_partitioned_by_date.png)
 
 ### Step 4: Automation and Monitoring
 
