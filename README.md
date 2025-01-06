@@ -12,6 +12,7 @@ This project implements a robust data pipeline on Azure to address this need. Th
 This project builds an end-to-end data pipeline on Azure to extract, transform, and load (ETL) customer, product, market, and sales data from an on-premises MySQL database, ultimately generating actionable insights.
 
 ## Solution Architecture
+![Alt text](images/0.data_architecture.png)
 
 The solution comprises the following components:
 
